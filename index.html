@@ -60,9 +60,10 @@ header.site .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:
 @media(min-width:48rem){.poles{grid-template-columns:repeat(3,1fr)}}
 .pole{border:2px solid var(--edge);padding:1.2rem 1.3rem 1rem;box-shadow:.4rem .4rem 0 var(--edge);color:#190d42}
 .pole:nth-child(1){background:var(--sky)}
-.pole:nth-child(2){background:var(--orange)}
+.pole:nth-child(2){background:var(--orange);border-color:var(--sky)}
 .pole:nth-child(3){background:#190d42;color:#fffdeb;box-shadow:.4rem .4rem 0 var(--orange)}
-.pole p{font-size:1.15rem}
+.pole h3{margin-bottom:.85rem}
+.pole p{font-size:1rem;line-height:1.45;margin:0 0 1rem;letter-spacing:-.015em}
 .pole a{font-weight:600}
 .two{display:grid;gap:var(--u)}
 @media(min-width:48rem){.two{grid-template-columns:1fr 1fr}}
