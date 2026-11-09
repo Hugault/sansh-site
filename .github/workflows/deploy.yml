@@ -1,0 +1,39 @@
+
+name: Publier SANSH sur OVH
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le site
+        uses: actions/checkout@v4
+
+      - name: Installer le client SFTP
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Enregistrer l'empreinte du serveur OVH
+        env:
+          OVH_HOST_KEY: ${{ secrets.OVH_SFTP_HOST_KEY }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$OVH_HOST_KEY" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Publier index.html
+        env:
+          SSHPASS: ${{ secrets.OVH_SFTP_PASSWORD }}
+        run: |
+          sshpass -e sftp \
+            -o StrictHostKeyChecking=yes \
+            -P 22 \
+            sanshfp@ftp.cluster129.hosting.ovh.net <<'EOF'
+          put index.html /home/sanshfp/www/index.html
+          bye
+          EOF
