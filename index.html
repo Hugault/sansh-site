@@ -29,12 +29,18 @@ a{color:inherit}
 :focus-visible{outline:3px solid var(--orange);outline-offset:3px}
 .wrap{max-width:64rem;margin:0 auto;padding:0 1.25rem}
 header.site{background:#190d42;color:#fffdeb;border-bottom:4px solid var(--orange)}
-header.site .wrap{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:.25rem 1.5rem;padding-top:.8rem;padding-bottom:.8rem}
+header.site .wrap{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;padding-top:.8rem;padding-bottom:.8rem}
 .logo{font-family:Anton,Impact,sans-serif;font-size:1.9rem;text-decoration:none;letter-spacing:.03em;text-shadow:.07em .07em 0 var(--wine)}
-nav{display:flex;flex-wrap:wrap;gap:.1rem 1.3rem}
-nav a{text-decoration:none;padding:.35rem 0;border-bottom:3px solid transparent;font-size:1.1rem}
-nav a[aria-current="page"]{border-bottom-color:var(--orange)}
-nav a:hover{border-bottom-color:var(--sky)}
+/* Menu déroulant placé juste sous SANSH */
+.menu{position:relative;z-index:10}
+.menu summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .65rem;border:1px solid var(--orange);font-size:1rem;color:#fffdeb}
+.menu summary::-webkit-details-marker{display:none}
+.menu summary::after{content:"▾";color:var(--orange)}
+.menu[open] summary::after{content:"▴"}
+.menu nav{position:absolute;top:calc(100% + .35rem);left:0;display:flex;flex-direction:column;min-width:min(19rem,calc(100vw - 2.5rem));background:#190d42;border:2px solid var(--orange);box-shadow:.3rem .3rem 0 var(--orange);padding:.4rem;z-index:20}
+.menu nav a{text-decoration:none;padding:.55rem .7rem;font-size:1.05rem;line-height:1.4;border-left:3px solid transparent}
+.menu nav a[aria-current="page"]{border-left-color:var(--orange);background:rgba(255,255,255,.08)}
+.menu nav a:hover{background:rgba(255,255,255,.12)}
 .view{display:none;max-width:64rem;margin:0 auto;padding:calc(var(--u)*2) 1.25rem calc(var(--u)*2)}
 .view.on{display:block}
 .stage{padding:0 .6rem .6rem 0}
@@ -77,13 +83,16 @@ footer.site p{margin:0}
 <header class="site">
   <div class="wrap">
     <a class="logo" href="#accueil">SANSH</a>
-    <nav aria-label="Navigation principale">
+    <details class="menu">
+      <summary>Menu</summary>
+      <nav aria-label="Navigation principale">
       <a href="#accueil">Accueil</a>
       <a href="#ecrivain-public">Écrivain public</a>
       <a href="#numerique">Démarches et numérique</a>
       <a href="#ateliers">Ateliers d’écriture</a>
       <a href="#contact">Contact</a>
-    </nav>
+      </nav>
+    </details>
   </div>
 </header>
 
@@ -246,6 +255,9 @@ footer.site p{margin:0}
       e.style.marginBottom=(Math.ceil(h/u-0.01)*u-h+u)+"px";
     }
   }
+  document.querySelectorAll(".menu nav a").forEach(function(a){
+    a.addEventListener("click",function(){document.querySelector(".menu").open=false;});
+  });
   window.addEventListener("hashchange",show);
   window.addEventListener("resize",snap);
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(snap);
