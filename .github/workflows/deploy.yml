@@ -2,6 +2,9 @@
 name: Publier SANSH sur OVH
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
