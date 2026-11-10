@@ -136,6 +136,7 @@ footer.site p{margin:0}
 
 
 /* Petit personnage griffonné : superposition décorative, sans bloquer les liens. */
+/* Le coureur reste visible sur toutes les pages SANSH. */
 #sansh-runner{position:absolute;left:0;top:0;width:52px;height:72px;z-index:35;pointer-events:none;color:#190C43;will-change:transform;filter:drop-shadow(.5px .5px 0 rgba(25,12,67,.12))}
 #sansh-runner .runner-flip{transform-origin:26px 36px}
 #sansh-runner .runner-arm-left,#sansh-runner .runner-arm-right,#sansh-runner .runner-leg-left,#sansh-runner .runner-leg-right{transform-box:view-box;transform-origin:26px 36px}
@@ -179,7 +180,7 @@ footer.site p{margin:0}
 
 
 /* Surprise cachée dans le bandeau supérieur. */
-header.site{position:relative;isolation:isolate}
+header.site{position:relative;z-index:100;isolation:isolate}
 #sansh-secret-wall{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
 header.site .wrap{position:relative;z-index:2}
 #sansh-secret-crack{position:absolute;left:49%;top:10%;height:83%;width:92px;opacity:0;transform:translateX(-50%);transition:opacity .18s;pointer-events:none}
@@ -516,6 +517,7 @@ body:has(#contact.view.on) #sansh-paper-plane{opacity:1;visibility:visible}
     }
     window.scrollTo(0,0);
     snap();
+    window.dispatchEvent(new CustomEvent("sansh:page-shown",{detail:{page:h}}));
   }
   function snap(){
     var u=parseFloat(getComputedStyle(document.body).lineHeight);
@@ -631,9 +633,37 @@ body:has(#contact.view.on) #sansh-paper-plane{opacity:1;visibility:visible}
   (function(){
     var runner=document.getElementById('sansh-runner');
     if(!runner||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
-    var x=Math.min(window.innerWidth*.16,150),y=window.scrollY+Math.min(window.innerHeight*.6,380);
+    var x=Math.min(window.innerWidth*.16,150),y=Math.min(window.innerHeight*.6,380);
     var vx=1.65,vy=-.88,last=0;
     var flip=runner.querySelector('.runner-flip');
+    // La navigation SANSH utilise un affichage interne : réinitialiser après chaque affichage.
+    function resetRunner(){
+      // Coordonnées de document : chercher une position visible et libre
+      // après que la nouvelle page a été affichée.
+      var rects=obstacles();
+      var top=window.scrollY+95;
+      var bottom=window.scrollY+window.innerHeight-85;
+      var preferredX=Math.min(window.innerWidth*.16,150);
+      var preferredY=Math.max(top,Math.min(bottom,window.scrollY+window.innerHeight*.55));
+      var candidates=[[preferredX,preferredY]];
+      for(var yy=top;yy<=bottom;yy+=32){
+        for(var xx=20;xx<=window.innerWidth-75;xx+=32)candidates.push([xx,yy]);
+      }
+      for(var i=0;i<candidates.length;i++){
+        if(!hits(candidates[i][0],candidates[i][1],rects)){
+          x=candidates[i][0];y=candidates[i][1];break;
+        }
+      }
+      vx=1.65;vy=-.88;last=0;
+      runner.style.transform='translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0)';
+      runner.style.visibility='visible';
+    }
+    window.addEventListener('sansh:page-shown',function(e){
+      requestAnimationFrame(resetRunner);
+    });
+    window.addEventListener('hashchange',function(){
+      requestAnimationFrame(resetRunner);
+    });
     // Le coureur rebondit avant de toucher le logo, les bandeaux et le pied de page.
     function obstacles(){
       return Array.from(document.querySelectorAll('header.site, footer.site, .top, .bot'))
@@ -647,7 +677,7 @@ body:has(#contact.view.on) #sansh-paper-plane{opacity:1;visibility:visible}
     function frame(t){
       if(!last)last=t;
       var dt=Math.min((t-last)/16.67,2);last=t;
-      var maxX=Math.max(0,document.documentElement.clientWidth-54),maxY=Math.max(0,document.documentElement.scrollHeight-74);
+      var maxX=Math.max(0,document.documentElement.clientWidth-54),maxY=Math.max(0,window.scrollY+window.innerHeight-74);
       var rects=obstacles();
       var nx=Math.max(0,Math.min(maxX,x+vx*dt));
       var ny=Math.max(0,Math.min(maxY,y+vy*dt));
@@ -659,6 +689,7 @@ body:has(#contact.view.on) #sansh-paper-plane{opacity:1;visibility:visible}
       flip.style.transform=vx<0?'scaleX(-1)':'scaleX(1)';
       requestAnimationFrame(frame);
     }
+    resetRunner();
     requestAnimationFrame(frame);
   })();
 })();
